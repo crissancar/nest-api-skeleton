@@ -1,0 +1,53 @@
+version: '3.8'
+
+x-app-service: &default-app
+  build: .
+  command: ''
+  container_name: ''
+  depends_on:
+    - postgres
+  networks:
+    - api-skeleton-network
+  volumes:
+    - .:/code
+    - node_modules:/code/node_modules
+
+services:
+  api-skeleton-backend:
+    <<: *default-app
+    container_name: 'app'
+    command: bash -c "npm run build && npm run start"
+    ports:
+      - '3000:3000'
+
+  postgres:
+    container_name: 'postgres'
+    image: postgres:alpine
+    ports:
+      - '5432:5432'
+    networks:
+      - api-skeleton-network
+    environment:
+      POSTGRES_DB: 'api-skeleton'
+      POSTGRES_USER: 'admin'
+      POSTGRES_PASSWORD: 'admin'
+    volumes:
+      - postgres_data:/var/lib/postgresql/data/
+  pgadmin:
+#    <<: *default-app
+    container_name: pgadmin_container
+    image: dpage/pgadmin4
+    ports:
+      - 5050:80
+    networks:
+      - api-skeleton-network
+    environment:
+      PGADMIN_DEFAULT_EMAIL: devcristiansanchez@gmail.com
+      PGADMIN_DEFAULT_PASSWORD: admin
+
+volumes:
+  node_modules:
+  postgres_data:
+
+networks:
+  api-skeleton-network:
